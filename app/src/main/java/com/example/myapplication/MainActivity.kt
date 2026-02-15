@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PlayArrow
@@ -27,6 +29,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -42,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
@@ -70,7 +74,6 @@ data class AlgorithmInfo(
     val advantages: List<String>,
     val disadvantages: List<String>
 )
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -150,7 +153,7 @@ fun ExampleBox(
 
             // Memory Chips Section
             Text(
-                text = "Memory:",
+                text = "Current Memory:",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
@@ -436,10 +439,128 @@ fun RunScreen(padding: Modifier) {
 }
 
 @Composable
-fun SettingsScreen(padding: Modifier) {
-    Text(
-        text = "Settings",
-        modifier = Modifier
-    )
+fun SettingsScreen(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+    ) {
+        Text(
+            text = "Settings",
+            modifier = Modifier
+                .padding(top = 55.dp, start = 30.dp, bottom = 18.dp)
+                .fillMaxWidth(),
+            style = MaterialTheme.typography.headlineLarge,
+            textAlign = TextAlign.Left
+        )
+
+        Text(
+            "Appearance",
+            modifier = Modifier.padding(start = 24.dp),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        Text(
+            "Developer",
+            modifier = Modifier.padding(start = 24.dp),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        Card(
+            shape = CardDefaults.elevatedShape,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 30.dp, vertical = 20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+
+            val uriHandler = LocalUriHandler.current
+
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(modifier = Modifier.padding(bottom = 6.dp)) {
+                    Text(
+                        "Github Profile", style = MaterialTheme.typography.bodyLarge,
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        modifier = Modifier.clickable {
+                            uriHandler.openUri("https://github.com/vishwajithkv")
+                        },
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                HorizontalDivider()
+                Row(modifier = Modifier.padding(top = 6.dp)) {
+                    Text(
+                        "Source Code",
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        modifier = Modifier.clickable {
+                            uriHandler.openUri("https://github.com/vishwajithkv/PageSim")
+                        },
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        Text(
+            "About",
+            modifier = Modifier.padding(start = 24.dp),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        Card(
+            shape = CardDefaults.elevatedShape,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 30.dp, vertical = 20.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+
+            val uriHandler = LocalUriHandler.current
+
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(modifier = Modifier.padding(bottom = 6.dp)) {
+                    Text(
+                        "Version",
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        "1.0.0",
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+                HorizontalDivider()
+                Row(modifier = Modifier.padding(top = 6.dp)) {
+                    Text(
+                        "Built With",
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        "Compose",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+        }
+
+
+    }
 }
 
