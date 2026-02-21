@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
@@ -36,6 +37,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -58,6 +60,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
@@ -486,11 +490,102 @@ fun InfoScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun RunScreen(padding: Modifier) {
-    Text(
-        text = "Simulate",
-        modifier = Modifier
-    )
+fun RunScreen(modifier: Modifier = Modifier) {
+
+    var inputString by remember { mutableStateOf("") }
+    var inputFrame by remember { mutableStateOf(3) }
+    var resultSteps by remember { mutableStateOf(listOf<Step>()) }
+
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+    ) {
+        Text(
+            text = "Simulate",
+            modifier = Modifier
+                .padding(top = 55.dp, start = 30.dp, bottom = 18.dp)
+                .fillMaxWidth(),
+            style = MaterialTheme.typography.headlineLarge.copy(
+                platformStyle = PlatformTextStyle(
+                    includeFontPadding = false
+                )
+            )
+        )
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 6.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+            ),
+        ) {
+            Row(modifier = Modifier.padding(6.dp)) {
+                Icon(
+                    imageVector = Icons.Outlined.Info,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = "Select an algorithm and press run to start the simulation",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+        }
+
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+
+                // Algorithm Dropdown
+                //ExposedDropdownMenuBox() {  }
+
+                // Reference String
+                OutlinedTextField(
+                    value = inputString,
+                    onValueChange = { inputString = it },
+                    label = { Text("Reference String (comma separated)") },
+                    supportingText = { Text("Enter page numbers separated by commas") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Frame Size
+                OutlinedTextField(
+                    value = inputFrame.toString(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    onValueChange = {
+                        inputFrame = try {
+                            it.toInt()
+                        } catch(_ : Exception) {
+                            0
+                        }
+                    },
+                    label = { Text("Frame Size") },
+                    supportingText = { Text("Number of frames in memory") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Button(
+                    onClick = {
+                        resultSteps = firstInFirstOutAlgorithm(
+                            list = inputString.split(","),
+                            frameSize = inputFrame
+                        )
+                    },
+                    content = { Text("FIFO") }
+                )
+
+                Text(resultSteps.toString())
+            }
+        }
+    }
 }
 
 @Composable
