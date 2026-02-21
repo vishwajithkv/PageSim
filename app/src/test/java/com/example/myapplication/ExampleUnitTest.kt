@@ -11,7 +11,12 @@ import org.junit.Assert.*
  */
 class ExampleUnitTest {
     @Test
-    fun addition_isCorrect() {
+    fun testFirstInFirstOut() {
+        val result = firstInFirstOutAlgorithm(
+            listOf("1","2","1","2","3","4"),
+            3
+        )
+        println(result)
         assertEquals(4, 2 + 2)
     }
 }
