@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -490,7 +491,11 @@ fun InfoScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun RunScreen(modifier: Modifier = Modifier) {
+fun SimulationResults(
+    steps: List<Step>,
+    frameSize: Int,
+    referenceString: List<String>,
+) {
 
     var inputString by remember { mutableStateOf("") }
     var inputFrame by remember { mutableStateOf(3) }
@@ -498,9 +503,9 @@ fun RunScreen(modifier: Modifier = Modifier) {
 
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
+            .padding(vertical = 16.dp)
     ) {
         Text(
             text = "Simulate",
@@ -516,28 +521,39 @@ fun RunScreen(modifier: Modifier = Modifier) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 6.dp),
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            shape = RoundedCornerShape(28.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
             ),
         ) {
-            Row(modifier = Modifier.padding(6.dp)) {
-                Icon(
-                    imageVector = Icons.Outlined.Info,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.width(16.dp))
+
+            Column(
+                modifier = Modifier.padding(32.dp)
+            ) {
+
                 Text(
-                    text = "Select an algorithm and press run to start the simulation",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    text = "Results Summary",
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
 
-        ElevatedCard(
-            modifier = Modifier.fillMaxWidth()
+        Spacer(Modifier.height(20.dp))
+
+        /*
+        --------------------------
+        SIMULATION STEPS TABLE
+        --------------------------
+         */
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp),
+            shape = RoundedCornerShape(20.dp)
         ) {
             Column(
                 modifier = Modifier.padding(20.dp),
@@ -556,37 +572,406 @@ fun RunScreen(modifier: Modifier = Modifier) {
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Frame Size
-                OutlinedTextField(
-                    value = inputFrame.toString(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    onValueChange = {
-                        inputFrame = try {
-                            it.toInt()
-                        } catch(_ : Exception) {
-                            0
-                        }
-                    },
-                    label = { Text("Frame Size") },
-                    supportingText = { Text("Number of frames in memory") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Spacer(Modifier.height(12.dp))
 
-                Button(
-                    onClick = {
-                        resultSteps = firstInFirstOutAlgorithm(
-                            list = inputString.split(","),
-                            frameSize = inputFrame
+                Column {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp, horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        Text(
+                            "Step",
+                            modifier = Modifier.width(40.dp),
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
-                    },
-                    content = { Text("FIFO") }
-                )
 
-                Text(resultSteps.toString())
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Text(
+                            "Page",
+                            modifier = Modifier.width(60.dp),
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Text(
+                            "Memory Frames",
+                            modifier = Modifier.weight(1f),
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Text(
+                            "Status",
+                            modifier = Modifier.width(70.dp),
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+
+                    steps.forEachIndexed { index, step ->
+                        val page = referenceString[index]
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            /*
+                            Step number
+                             */
+
+                            Text(
+                                (index + 1).toString(),
+                                modifier = Modifier.width(40.dp)
+                            )
+
+                            /*
+                            Page chip
+                             */
+
+                            Box(
+                                modifier = Modifier
+                                    .width(60.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .background(
+                                            MaterialTheme.colorScheme.primary,
+                                            RoundedCornerShape(50)
+                                        )
+                                        .padding(
+                                            horizontal = 12.dp,
+                                            vertical = 6.dp
+                                        )
+                                ) {
+                                    Text(
+                                        page ?: "-",
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                }
+                            }
+
+                            /*
+                            Memory Frames
+                             */
+
+                            Row(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .horizontalScroll(rememberScrollState())
+                            ) {
+
+                                repeat(frameSize) { frameIndex ->
+
+                                    val value =
+                                        step.currentFrame.getOrNull(frameIndex)
+
+                                    val background =
+                                        if (value == null)
+                                            Color.LightGray
+                                        else
+                                            MaterialTheme.colorScheme.primary
+
+                                    Box(
+                                        modifier = Modifier
+                                            .padding(end = 6.dp)
+                                            .size(36.dp)
+                                            .background(
+                                                background,
+                                                RoundedCornerShape(10.dp)
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            value ?: "-",
+                                            color = if (value == null) Color.DarkGray else MaterialTheme.colorScheme.onPrimary,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+
+                            /*
+                            Status chip
+                             */
+
+                            Box(
+                                modifier = Modifier
+                                    .width(70.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+
+                                val color =
+                                    if (step.isHit)
+                                        Color(0xFF2E7D32)
+                                    else
+                                        Color(0xFFD32F2F)
+
+                                Box(
+                                    modifier = Modifier
+                                        .background(
+                                            color,
+                                            RoundedCornerShape(50)
+                                        )
+                                        .padding(
+                                            horizontal = 12.dp,
+                                            vertical = 4.dp
+                                        )
+                                ) {
+
+                                    Text(
+                                        if (step.isHit) "HIT" else "FAULT",
+                                        color = Color.White,
+                                        fontSize = 12.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RunScreen(modifier: Modifier = Modifier) {
+
+    var inputString by remember { mutableStateOf("7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2") }
+    var inputFrame by remember { mutableStateOf("3") }
+    var steps by remember { mutableStateOf<List<Step>>(emptyList()) }
+
+    val algorithms = listOf(
+        "FIFO (First-In-First-Out)",
+        "LRU (Least Recently Used)",
+        "Optimal (Future Look Up)"
+    )
+
+    val frameSize = inputFrame.toIntOrNull()
+    val referenceString =
+        inputString.split(",").map { it.trim() }.filter { it.matches(Regex("\\d+")) }
+
+    var expanded by remember { mutableStateOf(false) }
+    var selectedAlgorithm by remember { mutableStateOf(algorithms[0]) }
+    var simFrameSize by remember { mutableStateOf<Int?>(null) }
+    var simReferenceList by remember { mutableStateOf<List<String>>(emptyList()) }
+
+    LazyColumn(
+        modifier = modifier
+            .fillMaxWidth()
+
+    ) {
+        item {
+            Text(
+                text = "Simulate",
+                modifier = Modifier
+                    .padding(top = 55.dp, start = 30.dp, bottom = 18.dp)
+                    .fillMaxWidth(),
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    platformStyle = PlatformTextStyle(
+                        includeFontPadding = false
+                    )
+                )
+            )
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                ),
+            ) {
+                Row(modifier = Modifier.padding(8.dp)) {
+                    Icon(
+                        imageVector = Icons.Outlined.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = "Select an algorithm and press run to start the simulation",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+
+            ElevatedCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainerHigh)
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+
+                    // Algorithm Dropdown
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = !expanded }
+                    ) {
+
+                        OutlinedTextField(
+                            value = selectedAlgorithm,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Algorithm") },
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded)
+                            },
+                            modifier = Modifier
+                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
+                                .fillMaxWidth()
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+
+                            algorithms.forEach { algorithm ->
+                                DropdownMenuItem(
+                                    text = { Text(algorithm) },
+                                    onClick = {
+                                        selectedAlgorithm = algorithm
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+
+                    // Reference String
+                    OutlinedTextField(
+                        value = inputString,
+                        onValueChange = {
+                            inputString = it
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        label = { Text("Reference String (comma separated)") },
+                        supportingText = { Text("Enter page numbers separated by commas") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+
+                    // Frame Size
+                    OutlinedTextField(
+                        value = inputFrame.toString(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        onValueChange = {
+                            if (it.all { ch -> ch.isDigit() }) {
+                                inputFrame = it
+                            }
+                        },
+                        label = { Text("Frame Size") },
+                        supportingText = { Text("Number of frames in memory") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+
+                        Button(
+                            onClick = {
+                                if (frameSize == null || frameSize <= 0) return@Button
+                                simFrameSize = frameSize
+                                simReferenceList = referenceString
+                                steps = when (selectedAlgorithm) {
+                                    "FIFO (First-In-First-Out)" ->
+                                        firstInFirstOutAlgorithm(
+                                            list = referenceString,
+                                            frameSize = frameSize
+                                        )
+
+                                    "LRU (Least Recently Used)" ->
+                                        leastRecentlyUsedAlgorithm(
+                                            list = referenceString,
+                                            frameSize = frameSize
+                                        )
+
+                                    "Optimal (Future Look Up)" ->
+                                        optimalAlgorithm(
+                                            list = referenceString,
+                                            frameSize = frameSize
+                                        )
+
+                                    else -> emptyList()
+                                }
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            shape = RoundedCornerShape(28.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.PlayArrow,
+                                contentDescription = "Run",
+                                modifier = Modifier.size(22.dp)
+                            )
+
+                            Spacer(Modifier.width(6.dp))
+
+                            Text(
+                                "Run Algorithm",
+                                fontSize = 12.sp,
+                                maxLines = 1,
+                            )
+                        }
+
+                        Button(
+                            onClick = { steps = emptyList() },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            shape = RoundedCornerShape(28.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.Replay,
+                                contentDescription = "Reset",
+                                modifier = Modifier.size(22.dp)
+                            )
+
+                            Spacer(Modifier.width(8.dp))
+
+                            Text(
+                                "Reset",
+                                fontSize = 12.sp,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+            }
+            if (steps.isNotEmpty() && simFrameSize != null && simFrameSize!! > 0) {
+                SimulationResults(
+                    steps = steps,
+                    frameSize = simFrameSize!!,
+                    referenceString = simReferenceList
+                )
+            }
+        }
+    }
+}
+
 
 @Composable
 fun ThemeSelectionDialog(

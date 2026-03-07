@@ -11,31 +11,36 @@ data class Step(
 fun firstInFirstOutAlgorithm(list: List<String>, frameSize: Int): List<Step> {
     val steps = ArrayList<Step>()
     val queue = ArrayBlockingQueue<String>(frameSize)
+    val frames = mutableListOf<String>()
     for (item in list) {
         if (queue.contains(item)) {
             steps.add(
                 Step(
                     isHit = true,
-                    currentFrame = queue.toList(),
+                    currentFrame = frames.toList(),
                     evictedItem = null
                 )
             )
         } else if (queue.size != frameSize) {
             queue.add(item)
+            frames.add(item)
             steps.add(
                 Step(
                     isHit = false,
-                    currentFrame = queue.toList(),
+                    currentFrame = frames.toList(),
                     evictedItem = null
                 )
             )
         } else {
             val evictedItem = queue.remove()
+            val index = frames.indexOf(evictedItem)
+            frames[index] = item
+
             queue.add(item)
             steps.add(
                 Step(
                     isHit = false,
-                    currentFrame = queue.toList(),
+                    currentFrame = frames.toList(),
                     evictedItem = evictedItem
                 )
             )
