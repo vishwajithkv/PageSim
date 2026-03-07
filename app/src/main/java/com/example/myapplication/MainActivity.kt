@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -52,13 +53,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.PlatformTextStyle
@@ -66,7 +70,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 
 // Bottom bar nav
@@ -95,17 +105,31 @@ data class AlgorithmInfo(
 )
 
 //Theming
-var dynamicColor by mutableStateOf(false)
-
 enum class ThemeMode { SYSTEM, DARK, LIGHT }
 
-var themeState by mutableStateOf(ThemeMode.SYSTEM)
+val Context.dataStore by preferencesDataStore(name = "settings")
+
+val THEME_MODE = stringPreferencesKey("theme_mode")
+val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val context = LocalContext.current
+
+            val themeFlow = context.dataStore.data.map { prefs ->
+                ThemeMode.valueOf(prefs[THEME_MODE] ?: ThemeMode.SYSTEM.name)
+            }
+
+            val dynamicColorFlow = context.dataStore.data.map { prefs ->
+                prefs[DYNAMIC_COLOR] ?: true
+            }
+
+            val themeState by themeFlow.collectAsState(initial = ThemeMode.SYSTEM)
+            val dynamicColor by dynamicColorFlow.collectAsState(initial = true)
+
             val darkTheme = when (themeState) {
                 ThemeMode.SYSTEM -> isSystemInDarkTheme()
                 ThemeMode.DARK -> true
@@ -124,14 +148,17 @@ class MainActivity : ComponentActivity() {
                         WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
                     }
                 }
-                PageFlip()
+                PageFlip(themeState = themeState, dynamicColor = dynamicColor)
             }
         }
     }
 }
 
 @Composable
-fun PageFlip() {
+fun PageFlip(
+    themeState: ThemeMode,
+    dynamicColor: Boolean
+) {
 
     val items = listOf(
         BottomNavItem("Info", Icons.Default.Info),
@@ -163,7 +190,11 @@ fun PageFlip() {
             when (selectedItem) {
                 0 -> InfoScreen(Modifier.padding(innerPadding))
                 1 -> RunScreen(Modifier.padding(innerPadding))
-                2 -> SettingsScreen(Modifier.padding(innerPadding))
+                2 -> SettingsScreen(
+                    themeState = themeState,
+                    dynamicColor = dynamicColor,
+                    Modifier.padding(innerPadding)
+                )
             }
         }
     )
@@ -1049,7 +1080,15 @@ fun ThemeSelectionDialog(
 
 
 @Composable
-fun SettingsScreen(modifier: Modifier = Modifier) {
+fun SettingsScreen(
+    themeState: ThemeMode,
+    dynamicColor: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -1108,7 +1147,11 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                     ThemeSelectionDialog(
                         currentTheme = themeState,
                         onThemeSelected = { selected ->
-                            themeState = selected
+                            coroutineScope.launch {
+                                context.dataStore.edit { prefs ->
+                                    prefs[THEME_MODE] = selected.name
+                                }
+                            }
                         },
                         onDismiss = { showThemeDialog = false }
                     )
@@ -1137,7 +1180,14 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.weight(1f))
                 Switch(
                     checked = dynamicColor,
-                    onCheckedChange = { dynamicColor = it },
+                    onCheckedChange = { enabled ->
+                        coroutineScope.launch {
+                            context.dataStore.edit { prefs ->
+                                prefs[DYNAMIC_COLOR] = enabled
+                            }
+                        }
+
+                    },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
             }
