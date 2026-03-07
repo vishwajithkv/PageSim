@@ -30,7 +30,6 @@ import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Speed
@@ -493,7 +492,7 @@ fun InfoScreen(modifier: Modifier = Modifier) {
 @Composable
 fun RunScreen(modifier: Modifier = Modifier) {
 
-    var inputString by remember { mutableStateOf("7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2") }
+    var inputString by remember { mutableStateOf("") }
     var inputFrame by remember { mutableStateOf(3) }
     var resultSteps by remember { mutableStateOf(listOf<Step>()) }
 
@@ -517,12 +516,12 @@ fun RunScreen(modifier: Modifier = Modifier) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 6.dp),
+                .padding(horizontal = 8.dp, vertical = 6.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
             ),
         ) {
-            Row(modifier = Modifier.padding(8.dp)) {
+            Row(modifier = Modifier.padding(6.dp)) {
                 Icon(
                     imageVector = Icons.Outlined.Info,
                     contentDescription = null,
@@ -537,12 +536,8 @@ fun RunScreen(modifier: Modifier = Modifier) {
             }
         }
 
-
         ElevatedCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceContainerHigh)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Column(
                 modifier = Modifier.padding(20.dp),
@@ -568,7 +563,7 @@ fun RunScreen(modifier: Modifier = Modifier) {
                     onValueChange = {
                         inputFrame = try {
                             it.toInt()
-                        } catch (_: Exception) {
+                        } catch(_ : Exception) {
                             0
                         }
                     },
@@ -577,57 +572,17 @@ fun RunScreen(modifier: Modifier = Modifier) {
                     modifier = Modifier.fillMaxWidth()
                 )
 
-//                Button(
-//                    onClick = {
-//                        resultSteps = firstInFirstOutAlgorithm(
-//                            list = inputString.split(","),
-//                            frameSize = inputFrame
-//                        )
-//                    },
-//                    content = { Text("FIFO") }
-//                )
-//                Text(resultSteps.toString())
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-
-                    Button(
-                        onClick = { TODO("Need to implement yet") },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.PlayArrow,
-                            contentDescription = "Run",
-                            modifier = Modifier.size(22.dp),
-                            tint = MaterialTheme.colorScheme.onPrimary
+                Button(
+                    onClick = {
+                        resultSteps = firstInFirstOutAlgorithm(
+                            list = inputString.split(","),
+                            frameSize = inputFrame
                         )
+                    },
+                    content = { Text("FIFO") }
+                )
 
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        Text("Run Algorithm")
-                    }
-
-                    Spacer(modifier = Modifier.weight(0.5f))
-
-                    Button(
-                        onClick = { TODO("Need to implement yet") },
-
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Replay,
-                            contentDescription = "Run",
-                            modifier = Modifier.size(22.dp),
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
-
-                        Spacer(modifier = Modifier.width(16.dp))
-
-                        Text("Reset")
-                    }
-                }
+                Text(resultSteps.toString())
             }
         }
     }
