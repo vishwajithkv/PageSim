@@ -5,13 +5,18 @@ plugins {
 }
 
 android {
-    namespace = "com.example.myapplication"
+    namespace = "com.leoxvis.pagesim"
     compileSdk {
         version = release(36)
+        defaultConfig{
+            ndk{
+                abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+            }
+        }
     }
 
     defaultConfig {
-        applicationId = "com.example.myapplication"
+        applicationId = "com.leoxvis.pagesim"
         minSdk = 26
         targetSdk = 36
         versionCode = 1

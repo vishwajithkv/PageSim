@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.leoxvis.pagesim
 
 import java.util.concurrent.ArrayBlockingQueue
 

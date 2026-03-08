@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.leoxvis.pagesim
 
 import android.app.Activity
 import android.content.Context
@@ -74,7 +74,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.leoxvis.pagesim.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -416,17 +416,17 @@ fun InfoScreen(modifier: Modifier = Modifier) {
                         Feature(
                             Icons.Default.Code,
                             "Multiple Algorithms",
-                            "Support for sorting, searching, and graph algorithms"
+                            "Support for FIFO, LRU, and Optimal page replacement"
                         ),
                         Feature(
                             Icons.Default.Speed,
                             "Real-time Simulation",
-                            "Perfect for students and developers learning algorithms"
+                            "Watch page replacement algorithms execute step by step"
                         ),
                         Feature(
                             Icons.Default.School,
                             "Educational",
-                            "Perfect for students and developers learning algorithms"
+                            "Perfect for students learning page replacement algorithms"
                         )
                     )
 
